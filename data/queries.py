@@ -1,7 +1,7 @@
 from datetime import datetime, timedelta
 import logging
 
-def generate_report(db_connection, glns_proveedores, glns_pdv, glns_productos):
+def execute_queries(db_connection, glns_proveedores, glns_pdv, glns_productos):
 
     try:
         with db_connection.cursor() as cur:

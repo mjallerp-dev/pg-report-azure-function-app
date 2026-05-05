@@ -49,7 +49,7 @@ def create_temp_tables(db_connection, proveedor_datos, pdv_datos, productos_dato
         
         db_connection.commit()
 
-    except Exception as e:
+    except Exception:
         logging.error("Error creating or populating temp tables", exc_info=True)
         db_connection.rollback()
         raise
