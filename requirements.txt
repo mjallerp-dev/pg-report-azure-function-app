@@ -3,3 +3,7 @@
 # azure-monitor-opentelemetry
 
 azure-functions
+psycopg2-binary
+azure-storage-blob
+pandas
+xlsxwriter
