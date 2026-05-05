@@ -134,3 +134,12 @@ __queuestorage__
 __azurite_db*__.json
 .python_packages
 
+# VS Code
+.vscode/
+
+# Azure Functions tooling
+.funcignore
+
+# Logs
+*.log
+logs/
