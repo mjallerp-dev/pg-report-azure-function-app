@@ -17,9 +17,10 @@ def send_email_with_attachment(excel_bytes: bytes, filename: str):
     try:
         date_now = datetime.now().strftime('%Y-%m-%d')
         date_report = (datetime.now() - timedelta(days=1)).strftime('%Y-%m-%d %H:%M')
+        to_emails = os.getenv("SENDGRID_TO_EMAIL").split(",")
         message = Mail(
             from_email=os.getenv("SENDGRID_FROM_EMAIL"),
-            to_emails=os.getenv("SENDGRID_TO_EMAIL"),
+            to_emails=to_emails,
             subject=f"Reporte diario de ventas e inventarios {date_now}",
             html_content=f"""
                 <div style="
