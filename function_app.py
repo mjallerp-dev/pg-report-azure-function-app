@@ -11,7 +11,7 @@ from email_service.send_email import send_email_with_attachment
 
 app = func.FunctionApp()
 
-@app.timer_trigger(schedule="0 0 0 * * *", arg_name="myTimer", run_on_startup=False,
+@app.timer_trigger(schedule="0 0 0 * * *", arg_name="myTimer", run_on_startup=True,
               use_monitor=False) 
 def pg_report_timer(myTimer: func.TimerRequest) -> None:
 
@@ -20,27 +20,26 @@ def pg_report_timer(myTimer: func.TimerRequest) -> None:
 
     logging.info('Python timer trigger function executed.')
 
-    conn = db_connection()
-
     try:
+        with db_connection() as conn:
 
-        # input_data
-        proveedor_datos, glns_proveedores, pdv_datos, glns_pdv, productos_datos, glns_productos = load_input_data()
+            # input_data
+            proveedor_datos, glns_proveedores, pdv_datos, glns_pdv, productos_datos, glns_productos = load_input_data()
+    
+            # temp_tables
+            create_temp_tables(conn, proveedor_datos, pdv_datos, productos_datos)
+    
+            # queries
+            final_query = execute_queries(conn, glns_proveedores, glns_pdv, glns_productos)
+    
+            # generate_report
+            filename, excel_bytes = generate_excel_report(final_query)
+    
+            # upload_report
+            upload_excel_to_blob(excel_bytes, filename)
 
-        # temp_tables
-        create_temp_tables(conn, proveedor_datos, pdv_datos, productos_datos)
-
-        # queries
-        final_query = execute_queries(conn, glns_proveedores, glns_pdv, glns_productos)
-
-        # generate_report
-        filename, excel_bytes = generate_excel_report(conn, final_query)
-
-        # upload_report
-        upload_excel_to_blob(excel_bytes, filename)
-        send_email_with_attachment(excel_bytes, filename)
+            # send_email
+            send_email_with_attachment(excel_bytes, filename)
     
     except Exception:
         logging.error("An error occurred during the report generation process", exc_info=True)
-    finally:
-        conn.close()
