@@ -1,12 +1,13 @@
 from datetime import datetime, timedelta
 import logging
+import pandas as pd
 
 def execute_queries(db_connection, glns_proveedores, glns_pdv, glns_productos):
 
     try:
         with db_connection.cursor() as cur:
 
-            start_date = datetime.today() - timedelta(days=7)
+            start_date = datetime.today() - timedelta(days=8)
 
             for i in range(7):
 
@@ -42,7 +43,7 @@ def execute_queries(db_connection, glns_proveedores, glns_pdv, glns_productos):
 
                 logging.info("Ventas del dia %s procesado...", date_now.date())
 
-            date_inv = datetime.today() - timedelta(days=1)
+            date_inv = datetime.today() - timedelta(days=2)
 
             cur.execute("""
                 INSERT INTO inventory_daily_report (day, glnprovider, glnretailerlocation, gtin, und_inventario, inventarios)
@@ -66,6 +67,8 @@ def execute_queries(db_connection, glns_proveedores, glns_pdv, glns_productos):
                         """, (date_inv.date(), glns_proveedores, glns_pdv, glns_productos))
             
             logging.info("Inventarios del dia %s procesado...", date_inv.date())
+            
+        db_connection.commit()
 
         final_query = """
             WITH CTE AS (
@@ -87,8 +90,15 @@ def execute_queries(db_connection, glns_proveedores, glns_pdv, glns_productos):
                 AND ied.glnretailerlocation::TEXT = CTE.glnretailerlocation
                 AND ied.gtin::TEXT = CTE.gtin
         """
+
+        df = pd.read_sql(final_query, db_connection)
+
+        print("Filas final_query:", len(df))
+        print(df.head())
+
         db_connection.commit()
-        return final_query
+
+        return df
 
 
     except Exception:

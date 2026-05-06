@@ -17,15 +17,15 @@ def read_csv_from_blob(blob_name: str) -> pd.DataFrame:
 
 def load_input_data():
     
-    df_prov = read_csv_from_blob("proveedores.csv")
+    df_prov = read_csv_from_blob("Proveedores.csv")
     proveedor_datos = list(df_prov.itertuples(index=False, name=None))
     glns_proveedores = tuple(df_prov.iloc[:,0].astype(str).tolist())
 
-    df_pdv = read_csv_from_blob("pdv.csv")
+    df_pdv = read_csv_from_blob("Pdv.csv")
     pdv_datos = list(df_pdv.itertuples(index=False, name=None))
     glns_pdv = tuple(df_pdv.iloc[:,0].astype(str).tolist())
 
-    df_prod = read_csv_from_blob("productos.csv")
+    df_prod = read_csv_from_blob("Productos.csv")
     productos_datos = list(df_prod.itertuples(index=False, name=None))
     glns_productos = tuple(df_prod.iloc[:,0].astype(str).tolist())
 

@@ -3,11 +3,10 @@ from io import BytesIO
 from datetime import datetime
 import logging
 
-def generate_excel_report(db_connection, final_query_string):
+def generate_excel_report(df):
 
     try:
-
-        df = pd.read_sql(final_query_string, db_connection)
+        
         filename = f"reporte_ventas_inv_{datetime.now().strftime('%Y%m%d_%H%M')}.xlsx"
         output = BytesIO()
 
@@ -25,7 +24,7 @@ def generate_excel_report(db_connection, final_query_string):
             })
 
             for i, col in enumerate(df.columns):
-                width = max(df[col].astype(str).map(len).max(), len(col)) + 2
+                width = max(df[col].fillna("").astype(str).map(len).max(), len(col)) + 2
                 worksheet.set_column(i, i, width)
 
         output.seek(0)
@@ -34,5 +33,3 @@ def generate_excel_report(db_connection, final_query_string):
 
     except Exception:
         logging.error(f"[ERROR] Ha ocurrido un error durante el proceso", exc_info=True)
-    finally:
-        db_connection.close()
