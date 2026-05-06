@@ -143,3 +143,5 @@ __azurite_db*__.json
 # Logs
 *.log
 logs/
+
+.idea/
