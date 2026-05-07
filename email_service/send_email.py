@@ -1,64 +1,66 @@
+import smtplib
 import os
-import base64
 import logging
 from datetime import datetime, timedelta
-from sendgrid import SendGridAPIClient
-from sendgrid.helpers.mail import (
-    Mail,
-    Attachment,
-    FileContent,
-    FileName,
-    FileType,
-    Disposition
-)
+from email.mime.multipart import MIMEMultipart
+from email.mime.base import MIMEBase
+from email.mime.text import MIMEText
+from email import encoders
 
 def send_email_with_attachment(excel_bytes: bytes, filename: str):
 
+    sender = os.getenv("EMAIL_SENDER")
+    password = os.getenv("APP_PASSWORD")
+    receiver = [email.strip() for email in os.getenv("EMAIL_RECEIVER").split(",")]
+
     try:
         date_now = datetime.now().strftime('%Y-%m-%d')
-        date_report = (datetime.now() - timedelta(days=1)).strftime('%Y-%m-%d %H:%M')
-        to_emails = os.getenv("SENDGRID_TO_EMAIL").split(",")
-        message = Mail(
-            from_email=os.getenv("SENDGRID_FROM_EMAIL"),
-            to_emails=to_emails,
-            subject=f"Reporte diario de ventas e inventarios {date_now}",
-            html_content=f"""
-                <div style="
-                    background-color:#4472C4;
-                    color:white;
-                    padding:15px;
-                    text-align:center;
-                    font-size:18px;
-                    font-weight:bold;
-                    border-radius:5px;
-                ">
-                    REPORTE DIARIO DE VENTAS E INVENTARIO
+        date_report = (datetime.now() - timedelta(days=2)).strftime('%Y-%m-%d %H:%M')
 
-                </div>
+        msg = MIMEMultipart()
+        msg['From'] = sender
+        msg['To'] = ", ".join(receiver)
+        msg['Subject'] = f"Reporte diario de ventas e inventarios {date_now}"
 
-                <p>Este es un correo electrónico automático.</p>
+        html_content=f"""
+            <div style="
+                background-color:#4472C4;
+                color:white;
+                padding:15px;
+                text-align:center;
+                font-size:18px;
+                font-weight:bold;
+                border-radius:5px;
+            ">
+                REPORTE DIARIO DE VENTAS E INVENTARIO
 
-                <p>Hola,</p>
+            </div>
 
-                <p>Adjunto te comparto el archivo con la información diaria de ventas e inventarios de las cadenas Éxito, Olimpica y Alkosto, correspondiente a {date_report}.</p>
-                
-                <p>Saludos,<br/>Azure Function App</p>
-            """
+            <p>Este es un correo electrónico automático.</p>
+
+            <p>Hola,</p>
+
+            <p>Adjunto te comparto el archivo con la información diaria de ventas e inventarios de las cadenas Éxito, Olimpica y Alkosto, correspondiente a {date_report}.</p>
+            
+            <p>Saludos,<br/>Azure Function App</p>
+
+        """
+
+        msg.attach(MIMEText(html_content, 'html'))
+
+        part = MIMEBase('application', 'octet-stream')
+        part.set_payload(excel_bytes)
+        encoders.encode_base64(part)
+        part.add_header(
+            'Content-Disposition',
+            f'attachment; filename={filename}'
         )
+        msg.attach(part)
 
-        encoded_file = base64.b64encode(excel_bytes).decode()
+        with smtplib.SMTP_SSL('smtp.gmail.com', 465) as server:
+            server.login(sender, password)
+            server.send_message(msg)
 
-        attachment = Attachment(
-            FileContent(encoded_file),
-            FileName(filename),
-            FileType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"),
-            Disposition("attachment")
-        )
-
-        message.attachment = attachment
-
-        sendgrid_client = SendGridAPIClient(os.getenv("SENDGRID_API_KEY"))
-        sendgrid_client.send(message)
 
         logging.info("📧 Email sent successfully with attachment: %s", filename)
 

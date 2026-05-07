@@ -11,7 +11,7 @@ from email_service.send_email import send_email_with_attachment
 
 app = func.FunctionApp()
 
-@app.timer_trigger(schedule="0 0 0 * * 0-5", arg_name="myTimer", run_on_startup=False,
+@app.timer_trigger(schedule="0 45 23 * * 0-5", arg_name="myTimer", run_on_startup=False,
               use_monitor=False) 
 def pg_report_timer(myTimer: func.TimerRequest) -> None:
 

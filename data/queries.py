@@ -7,7 +7,7 @@ def execute_queries(db_connection, glns_proveedores, glns_pdv, glns_productos):
     try:
         with db_connection.cursor() as cur:
 
-            start_date = datetime.today() - timedelta(days=8)
+            start_date = datetime.today() - timedelta(days=7)
 
             for i in range(7):
 
@@ -43,7 +43,7 @@ def execute_queries(db_connection, glns_proveedores, glns_pdv, glns_productos):
 
                 logging.info("Ventas del dia %s procesado...", date_now.date())
 
-            date_inv = datetime.today() - timedelta(days=2)
+            date_inv = datetime.today() - timedelta(days=1)
 
             cur.execute("""
                 INSERT INTO inventory_daily_report (day, glnprovider, glnretailerlocation, gtin, und_inventario, inventarios)
@@ -99,7 +99,6 @@ def execute_queries(db_connection, glns_proveedores, glns_pdv, glns_productos):
         db_connection.commit()
 
         return df
-
 
     except Exception:
         db_connection.rollback()
